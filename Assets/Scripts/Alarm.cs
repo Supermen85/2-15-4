@@ -3,69 +3,46 @@ using UnityEngine;
 
 public class Alarm : MonoBehaviour
 {
-    [SerializeField] private AudioSource _alarm;
-
-    private bool _isThiefInside = false;
+    [SerializeField] private AudioSource _alarmSound;
 
     private Coroutine _volumeChanger;
 
-    private void OnCollisionEnter(Collision collision)
+    public void TurnOn()
     {
-        if (collision.gameObject.GetComponent<Thief>() == null) 
-            return;
+        if (_alarmSound.isPlaying == false)
+            _alarmSound.Play();
+    }
 
-        _isThiefInside = true;
-
-        if (_alarm.isPlaying == false)
-            _alarm.Play();
-
+    public void IncreaseVolume()
+    {
         if (_volumeChanger != null)
             StopCoroutine(_volumeChanger);
 
-        TurnOn();
+        float maxVolume = 1f;
+        _volumeChanger = StartCoroutine(ChangeVolume(maxVolume));
     }
 
-    private void OnCollisionExit(Collision collision)
+    public void DecreaseVolume()
     {
-        if (collision.gameObject.GetComponent<Thief>() == null)
-            return;
-
-        _isThiefInside = false;
-
         if (_volumeChanger != null)
             StopCoroutine(_volumeChanger);
 
-        TurnOn();
-    }
-
-    private void TurnOn()
-    {
-        float volume;
-
-        if (_isThiefInside)
-        {
-            volume = 1f;
-        }
-        else
-        {
-            volume = 0f;
-        }
-
-        _volumeChanger = StartCoroutine(ChangeVolume(volume));
+        float minVolume = 0f;
+        _volumeChanger = StartCoroutine(ChangeVolume(minVolume));
     }
 
     private IEnumerator ChangeVolume(float target)
     {
-        while (_alarm.volume != target)
+        while (_alarmSound.volume != target)
         {
             float speed = 0.2f;
             
-            _alarm.volume = Mathf.MoveTowards(_alarm.volume, target, speed * Time.deltaTime);
+            _alarmSound.volume = Mathf.MoveTowards(_alarmSound.volume, target, speed * Time.deltaTime);
 
             yield return null;
         }
 
-        if (_alarm.volume == 0)
-            _alarm.Stop();
+        if (_alarmSound.volume == 0)
+            _alarmSound.Stop();
     }
 }
